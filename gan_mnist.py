@@ -3,10 +3,12 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 
+# Reading MNIST Dataset
 from tensorflow.examples.tutorials.mnist import input_data
 mnist = input_data.read_data_sets("MNIST_data")
 
 
+# Modelling Inputs
 def model_inputs(real_dim, z_dim):
     inputs_real = tf.placeholder(dtype=tf.float32, shape=(None, real_dim), name="inputs_real")
     inputs_z = tf.placeholder(dtype=tf.float32, shape=(None, z_dim), name="inputs_z")
@@ -14,6 +16,7 @@ def model_inputs(real_dim, z_dim):
     return inputs_real, inputs_z
 
 
+# Generator
 def generator(z, out_dim, n_units=128, reuse=False, alpha=0.01):
     with tf.variable_scope(name_or_scope="generator", reuse=reuse):
         h1 = tf.layers.dense(inputs=z, units=n_units, activation=None)
@@ -24,6 +27,7 @@ def generator(z, out_dim, n_units=128, reuse=False, alpha=0.01):
         return out
 
 
+# Discriminator
 def discriminator(x, n_units=128, reuse=False, alpha=0.01):
     with tf.variable_scope(name_or_scope="discriminator", reuse=reuse):
         h1 = tf.layers.dense(inputs=x, units=n_units, activation=None)
@@ -49,6 +53,7 @@ g_model = generator(input_z, input_size, n_units=g_hidden_size, alpha=alpha)
 d_model_real, d_logits_real = discriminator(input_real, n_units=d_hidden_size, alpha=alpha)
 d_model_fake, d_logits_fake = discriminator(g_model, n_units=d_hidden_size, reuse=True, alpha=alpha)
 
+# Calculating Losses
 d_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=d_logits_real, labels=tf.ones_like(d_logits_real)*(1-smooth)))
 d_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=d_logits_fake, labels=tf.zeros_like(d_logits_real)))
 
@@ -103,6 +108,8 @@ with tf.Session() as sess:
 with open('train_samples.pkl', 'wb') as f:
     pickle.dump(samples, f)
 
+    
+# Plot of Losses of Generator and Discriminator
 fig, ax = plt.subplots()
 losses = np.array(losses)
 plt.plot(losses.T[0], label='Discriminator')
